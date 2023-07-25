@@ -1,0 +1,31 @@
+var water_storage_dry = ee.Geometry.Point(56.10942271122434, 35.100323250847815); // Replace lon1 and lat1 with the coordinates of your first point
+var water_storage_wet = ee.Geometry.Point(59.40532114872434, 28.996809764600822); // Replace lon2 and lat2 with the coordinates of your second point
+
+//below are the dry and wet point that based on field work
+var dry_point = ee.Geometry.Point(58.67665, 30.573316);
+var wet_point = ee.Geometry.Point(59.0678, 29.496983);
+//Map.addLayer(dry_point,wet_point);
+
+var collection = SMAP4.select('sm_surface');
+
+var extractPointValues = function(image) {
+  var date = image.date().format('YYYY-MM-dd');
+  var value1 = image.reduceRegion(ee.Reducer.first(), dry_point, 30).get('sm_surface');
+  var value2 = image.reduceRegion(ee.Reducer.first(), wet_point, 30).get('sm_surface');
+
+  return ee.Feature(null, {
+    'date': date,
+    'dry_point': value1,
+    'wet_point': value2
+  });
+};
+
+var timeSeries = collection.map(extractPointValues);
+var featureCollection = ee.FeatureCollection(timeSeries);
+
+Export.table.toDrive({
+  collection: featureCollection,
+  description: 'sm_surface_d4w5',
+  folder: 'Summer',
+  fileFormat: 'CSV'
+});
