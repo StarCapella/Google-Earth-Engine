@@ -1,0 +1,43 @@
+// Define the region of interest
+var geometry = ee.Geometry.Polygon(
+  [[
+  [43.58817326530413,23.763013680917105],
+  [64.15457951530412,23.763013680917105],
+  [64.15457951530412,40.143432381124725],
+  [43.58817326530413,40.143432381124725],
+  [43.58817326530413,23.763013680917105]
+  ]]
+);
+
+//import the GRACE dataset
+var water_storage = GRACE.filterDate('2014-06-02','2014-09-01').select('lwe_thickness_jpl');
+//print(water_storage.size());
+
+// Clip the image collection to the region of interest
+var clippedWater = water_storage.map(function(image) {
+  return image.clip(geometry);
+});
+
+// Select the desired variable ('lwe_thickness_jpl') from the clipped ImageCollection
+var clipped_water = clippedWater;
+
+//the way to show the water storage data
+var WaterStorageVis = {
+  min: -3,
+  max: 4,
+  palette: ['b39387','ffe7c4','f2ffad','bef0ff','6074ff','1038ff'],
+};
+
+//calculate the mean water storage
+var MeanWaterStorage = clipped_water.mean();
+var MeanWaterImage = ee.Image(MeanWaterStorage).clip(geometry);
+
+Map.addLayer(MeanWaterImage,WaterStorageVis,'water storage');
+
+Export.image.toDrive({
+  image: MeanWaterImage, // Export the median image or choose other operations like .mean(), .max(), etc.
+  description: 'AverageWaterStorage_2017summer', // Description for the exported image
+  folder: 'Summer', // Folder in Google Drive to export the image to
+  scale: 111320, // Spatial resolution (e.g., 30 meters per pixel)
+  region: geometry // Region of interest for the export
+});
