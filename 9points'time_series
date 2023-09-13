@@ -1,1 +1,44 @@
 https://code.earthengine.google.com/57235777a4d2b2be275b162832eca61a
+
+//We selected 9 points for analyse
+
+var collection = GPM.select('precipitation');
+
+//var show_collection = collection.filterDate("2016-12-01","2016-12-31");
+//Map.addLayer(show_collection);
+
+var extractPointValues = function(image) {
+  var date = image.date().format('YYYY-MM-dd');
+  var value1 = image.reduceRegion(ee.Reducer.first(), desert_1, 30).get('precipitation');
+  var value2 = image.reduceRegion(ee.Reducer.first(), desert_2, 30).get('precipitation');
+  var value3 = image.reduceRegion(ee.Reducer.first(), desert_3, 30).get('precipitation');
+  var value4 = image.reduceRegion(ee.Reducer.first(), East_1, 30).get('precipitation');
+  var value5 = image.reduceRegion(ee.Reducer.first(), East_2, 30).get('precipitation');
+  var value6 = image.reduceRegion(ee.Reducer.first(), East_3, 30).get('precipitation');
+  var value7 = image.reduceRegion(ee.Reducer.first(), West_1, 30).get('precipitation');
+  var value8 = image.reduceRegion(ee.Reducer.first(), West_2, 30).get('precipitation');
+  var value9 = image.reduceRegion(ee.Reducer.first(), West_3, 30).get('precipitation');
+
+  return ee.Feature(null, {
+    'date': date,
+    'desert_1': value1,
+    'desert_2': value2,
+    'desert_3': value3,
+    'East_1': value4,
+    'East_2': value5,
+    'East_3': value6,
+    'West_1': value7,
+    'West_2': value8,
+    'West_3': value9,
+  });
+};
+
+var timeSeries = collection.map(extractPointValues);
+var featureCollection = ee.FeatureCollection(timeSeries);
+
+Export.table.toDrive({
+  collection: featureCollection,
+  description: 'precipitation9',
+  folder: 'Summer',
+  fileFormat: 'CSV'
+});
