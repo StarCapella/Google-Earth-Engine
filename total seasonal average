@@ -1,0 +1,266 @@
+var SMAP3 = ee.ImageCollection("NASA/SMAP/SPL3SMP_E/005"),
+    SMAP4 = ee.ImageCollection("NASA/SMAP/SPL4SMGP/007"),
+    GRACE = ee.ImageCollection("NASA/GRACE/MASS_GRIDS/LAND"),
+    GPM = ee.ImageCollection("NASA/GPM_L3/IMERG_MONTHLY_V06"),
+    skt = ee.ImageCollection("ECMWF/ERA5_LAND/DAILY_AGGR"),
+    modis = ee.ImageCollection("MODIS/006/MYD11A1");
+
+// Define the region of interest
+var regionOfInterest = ee.Geometry.Polygon(
+  [[
+  [43.58817326530413,23.763013680917105],
+  [64.15457951530412,23.763013680917105],
+  [64.15457951530412,40.143432381124725],
+  [43.58817326530413,40.143432381124725],
+  [43.58817326530413,23.763013680917105]
+  ]]
+);
+/*
+// Define the start and end months for the spring season
+var startMonth = 3; // March for spring, June for summer, September for autumn
+var endMonth = 6; // June for spring, September for summer, December for autumn
+
+// Load the GRACE image collection
+var collection = ee.ImageCollection('NASA/SMAP/SPL4SMGP/007')
+  .select('sm_rootzone') // Select the 'lwe_thickness_jpl' band
+  .filterDate('2015-04-01', '2022-12-31') // Filter the collection by the desired date range
+  .filterBounds(regionOfInterest); // Filter the collection by the region of interest
+
+// Calculate the mean value for each season
+var springAverages = ee.ImageCollection(
+  ee.List.sequence(2015, 2022).map(function(year) {
+    var startDate = ee.Date.fromYMD(year, startMonth, 1);
+    var endDate = ee.Date.fromYMD(year, endMonth, 1).advance(1, 'month');
+    
+    var springCollection = collection.filterDate(startDate, endDate);
+    var springMean = springCollection.mean().set('year', year);
+    
+    return springMean;
+  })
+);
+
+// Calculate the overall average of the spring averages
+var overallAverage = springAverages.mean();
+
+// Export the seasonal average image to Google Drive
+Export.image.toDrive({
+  image: overallAverage,
+  description: 'SMAP4root_Total_Spring_Average',
+  folder: 'Summer',
+  scale: 9000, // Adjust the scale according to your needs
+  region: regionOfInterest,
+  fileFormat: 'GeoTIFF'
+});
+*/
+/*
+//for winter, we need to adjust the code
+// Define the start and end months for the winter season
+var startMonth = 12; // December
+var endMonth = 2; // February
+
+// Load the GRACE image collection
+var collection = ee.ImageCollection('NASA/SMAP/SPL3SMP_E/005')
+  .select('soil_moisture_am') // Select the 'lwe_thickness_jpl' band
+  .filterDate('2015-04-01', '2022-12-31') // Filter the collection by the desired date range
+  .filterBounds(regionOfInterest); // Filter the collection by the region of interest
+print(collection.size());
+// Create a list of years
+var years = ee.List.sequence(2015, 2022);
+
+// Calculate the mean value for each winter season
+var winterAverages = ee.ImageCollection(years.map(function(year) {
+  year = ee.Number(year);
+  
+  // Calculate the start and end dates for the winter season
+  var startDate = ee.Date.fromYMD(year.subtract(1), startMonth, 1);
+  var endDate = ee.Date.fromYMD(year, endMonth, 1).advance(1, 'month');
+  
+  var winterCollection = collection.filterDate(startDate, endDate);
+  var winterMean = winterCollection.mean().set('year', year);
+  
+  return winterMean;
+}));
+
+// Calculate the overall average of the winter averages
+var overallAverage = ee.Image(winterAverages.mean());
+
+// Export the overall average image to Google Drive
+Export.image.toDrive({
+  image: overallAverage,
+  description: 'SMAP3am_Overall_Winter_Average',
+  folder: 'Summer',
+  scale: 9000, // Adjust the scale according to your needs
+  region: regionOfInterest,
+  fileFormat: 'GeoTIFF'
+});
+*/
+/*
+// Define the start and end months for the winter season
+var startMonth = 12; // December
+var endMonth = 2; // February
+
+// Load the SMAP image collection
+var collection = ee.ImageCollection('NASA/SMAP/SPL4SMGP/007')
+  .select('sm_rootzone') // Select the 'soil_moisture_am' band
+  .filterDate('2016-01-01', '2022-12-31') // Filter the collection by the desired date range
+  .filterBounds(regionOfInterest); // Filter the collection by the region of interest
+
+// Calculate the mean value for each December
+var decemberAverage = collection
+  .filter(ee.Filter.calendarRange(startMonth, startMonth, 'month')) // Filter images for December
+  .mean();
+
+// Calculate the mean value for each January
+var januaryAverage = collection
+  .filter(ee.Filter.calendarRange(1, 1, 'month')) // Filter images for January
+  .mean();
+
+// Calculate the mean value for each February
+var februaryAverage = collection
+  .filter(ee.Filter.calendarRange(endMonth, endMonth, 'month')) // Filter images for February
+  .mean();
+
+// Calculate the overall average of the three months
+var overallAverage = ee.ImageCollection([decemberAverage, januaryAverage, februaryAverage]).mean();
+
+// Export the overall average image to Google Drive
+Export.image.toDrive({
+  image: overallAverage,
+  description: 'SMAP4root_Overall_Winter_Average',
+  folder: 'Summer',
+  scale: 9000, // Adjust the scale according to your needs
+  region: regionOfInterest,
+  fileFormat: 'GeoTIFF'
+});
+*/
+/*
+// Define the start and end months for the season
+var startMonth = 6; // December
+var endMonth = 8; // February
+
+// Load the GPM image collection
+var collection = GPM
+  .select('precipitation') // Select the 'soil_moisture_am' band
+  .filterDate('2000-06-01', '2021-09-01') // Filter the collection by the desired date range
+  .filterBounds(regionOfInterest); // Filter the collection by the region of interest
+
+// Calculate the mean value for each December
+var decemberAverage = collection
+  .filter(ee.Filter.calendarRange(startMonth, startMonth, 'month')) // Filter images for December
+  .mean();
+
+// Calculate the mean value for each January
+var januaryAverage = collection
+  .filter(ee.Filter.calendarRange(7, 7, 'month')) // Filter images for January
+  .mean();
+
+// Calculate the mean value for each February
+var februaryAverage = collection
+  .filter(ee.Filter.calendarRange(endMonth, endMonth, 'month')) // Filter images for February
+  .mean();
+
+var MarchAverage = collection
+  .filter(ee.Filter.calendarRange(3, 3, 'month')).mean();
+  
+var NovemberAverage = collection.filter(ee.Filter.calendarRange(11, 11, 'month')).mean();
+
+// Calculate the overall average of the three months
+var overallAverage = ee.ImageCollection([decemberAverage, januaryAverage, februaryAverage]).mean();
+
+// Export the overall average image to Google Drive
+Export.image.toDrive({
+  image: MarchAverage,
+  description: 'precipitation_Overall_March_Average',
+  folder: 'Summer',
+  scale: 11132, // Adjust the scale according to your needs
+  region: regionOfInterest,
+  fileFormat: 'GeoTIFF'
+});
+
+Export.image.toDrive({
+  image: NovemberAverage,
+  description: 'precipitation_Overall_November_Average',
+  folder: 'Summer',
+  scale: 11132, // Adjust the scale according to your needs
+  region: regionOfInterest,
+  fileFormat: 'GeoTIFF'
+});
+*/
+
+// Define the start and end months for the season
+var startMonth = 12; // December
+var endMonth = 2; // February
+
+// Load the GPM image collection
+var collection = modis
+  .select('LST_Night_1km') // Select the 'soil_moisture_am' band
+  .filterDate('2002-07-04', '2023-06-01') // Filter the collection by the desired date range
+  .filterBounds(regionOfInterest); // Filter the collection by the region of interest
+
+// Calculate the mean value for each December
+var decemberAverage = collection
+  .filter(ee.Filter.calendarRange(startMonth, startMonth, 'month')) // Filter images for December
+  .mean();
+
+// Calculate the mean value for each January
+var januaryAverage = collection
+  .filter(ee.Filter.calendarRange(1, 1, 'month')) // Filter images for January
+  .mean();
+
+// Calculate the mean value for each February
+var februaryAverage = collection
+  .filter(ee.Filter.calendarRange(endMonth, endMonth, 'month')) // Filter images for February
+  .mean();
+
+var MarchAverage = collection
+  .filter(ee.Filter.calendarRange(3, 3, 'month')).mean();
+  
+var JuneAverage = collection.filter(ee.Filter.calendarRange(6, 6, 'month')).mean();
+
+var JulyAverage = collection.filter(ee.Filter.calendarRange(7, 7, 'month')).mean();
+
+var AugustAverage = collection.filter(ee.Filter.calendarRange(8, 8, 'month')).mean();
+  
+var NovemberAverage = collection.filter(ee.Filter.calendarRange(11, 11, 'month')).mean();
+
+// Calculate the overall average of the three months
+var WinterAverage = ee.ImageCollection([decemberAverage, januaryAverage, februaryAverage]).mean();
+
+var SummerAverage = ee.ImageCollection([JuneAverage, JulyAverage, AugustAverage]).mean();
+
+// Export the overall average image to Google Drive
+Export.image.toDrive({
+  image: WinterAverage,
+  description: 'modis_night_Overall_Winter_Average',
+  folder: 'Summer',
+  scale: 1000, // Adjust the scale according to your needs
+  region: regionOfInterest,
+  fileFormat: 'GeoTIFF'
+});
+
+Export.image.toDrive({
+  image: SummerAverage,
+  description: 'modis_night_Overall_Summer_Average',
+  folder: 'Summer',
+  scale: 1000, // Adjust the scale according to your needs
+  region: regionOfInterest,
+  fileFormat: 'GeoTIFF'
+});
+
+Export.image.toDrive({
+  image: MarchAverage,
+  description: 'modis_night_Overall_March_Average',
+  folder: 'Summer',
+  scale: 1000, // Adjust the scale according to your needs
+  region: regionOfInterest,
+  fileFormat: 'GeoTIFF'
+});
+
+Export.image.toDrive({
+  image: NovemberAverage,
+  description: 'modis_night_Overall_November_Average',
+  folder: 'Summer',
+  scale: 1000, // Adjust the scale according to your needs
+  region: regionOfInterest,
+  fileFormat: 'GeoTIFF'
+});
